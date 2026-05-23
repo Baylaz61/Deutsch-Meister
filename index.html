@@ -21,13 +21,27 @@
 <header class="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-darkcard/85 border-b border-ink/5 dark:border-white/10 backdrop-blur">
   <div class="max-w-6xl mx-auto h-16 px-4 flex items-center justify-between">
     <div><h1 class="font-headline font-extrabold text-xl">LingoVibe</h1><p class="text-xs text-muted dark:text-white/60">Almanca–Türkçe sözlük</p></div>
-    <button id="themeToggle" class="w-11 h-11 rounded-full bg-white dark:bg-darkbg border border-ink/10 dark:border-white/10 flex items-center justify-center"><span class="material-symbols-outlined text-primary dark:text-primarySoft">dark_mode</span></button>
+    <div class="flex items-center gap-2">
+      <button id="backupBtn" class="h-11 px-3 rounded-full bg-white dark:bg-darkbg border border-ink/10 dark:border-white/10 flex items-center gap-1.5 text-sm font-label text-primary dark:text-primarySoft" title="İlerlemeni dosyaya kaydet"><span class="material-symbols-outlined text-lg">download</span><span class="hidden sm:inline">Yedekle</span></button>
+      <button id="restoreBtn" class="h-11 px-3 rounded-full bg-white dark:bg-darkbg border border-ink/10 dark:border-white/10 flex items-center gap-1.5 text-sm font-label text-primary dark:text-primarySoft" title="Yedek dosyadan geri yükle"><span class="material-symbols-outlined text-lg">upload</span><span class="hidden sm:inline">Geri Yükle</span></button>
+      <input id="restoreFile" type="file" accept="application/json" class="hidden">
+      <button id="themeToggle" class="w-11 h-11 rounded-full bg-white dark:bg-darkbg border border-ink/10 dark:border-white/10 flex items-center justify-center"><span class="material-symbols-outlined text-primary dark:text-primarySoft">dark_mode</span></button>
+    </div>
   </div>
 </header>
 <main class="max-w-6xl mx-auto px-4 pt-24 pb-24 space-y-5">
   <section class="rounded-3xl bg-gradient-to-br from-primary to-cyan-300 text-white p-5 shadow-lg">
     <h2 class="font-headline font-extrabold text-2xl">Seç ve çalış</h2>
     <p id="infoText" class="mt-1 text-white/85">Bir seviye seç, kelimeleri incele, dinle ve favorile.</p>
+    <div class="mt-4">
+      <div class="flex items-center justify-between text-sm font-label mb-1.5">
+        <span id="progLabel">0 / 13.566 kelime</span>
+        <span id="progPct" class="font-bold">%0</span>
+      </div>
+      <div class="h-2.5 rounded-full bg-white/25 overflow-hidden">
+        <div id="progBar" class="h-full rounded-full bg-white transition-all duration-500" style="width:0%"></div>
+      </div>
+    </div>
   </section>
 
   <section class="space-y-3">
@@ -84,6 +98,21 @@ const visibleCount=document.getElementById('visibleCount');
 const levelText=document.getElementById('levelText');
 const favCount=document.getElementById('favCount');
 const knownCount=document.getElementById('knownCount');
+const progLabel=document.getElementById('progLabel');
+const progPct=document.getElementById('progPct');
+const progBar=document.getElementById('progBar');
+const TOTAL=words.length;
+function updateProgress(){
+  const n=known.size;
+  const pct=TOTAL? (n/TOTAL*100):0;
+  progLabel.textContent=`${n.toLocaleString('tr-TR')} / ${TOTAL.toLocaleString('tr-TR')} kelime`;
+  let pctText;
+  if(pct===0) pctText='%0';
+  else if(pct<1) pctText='%'+pct.toFixed(2);
+  else pctText='%'+Math.round(pct);
+  progPct.textContent=pctText;
+  progBar.style.width=Math.max(pct,0.5)+'%';
+}
 const infoText=document.getElementById('infoText');
 const sentinel=document.getElementById('sentinel');
 const loadingMore=document.getElementById('loadingMore');
@@ -117,15 +146,18 @@ function speak(text){
 function computeFiltered(){
   const q=norm(searchTerm.trim());
   filtered=words.filter(x=>{
-    // KNOWN tab shows only known words; every other view hides them
+    // Special tabs show their own set; the "browsing" views (ALL + levels) hide both known and favorited words
     if(levelFilter==='KNOWN'){
       if(!known.has(x.id)) return false;
+    } else if(levelFilter==='FAV'){
+      if(!favs.has(x.id)) return false;
     } else {
-      if(known.has(x.id)) return false;
+      // ALL or a level (A1..C2): hide words that are known OR favorited
+      if(known.has(x.id) || favs.has(x.id)) return false;
+      if(levelFilter!=='ALL' && x.level!==levelFilter) return false;
     }
-    const levelOk = (levelFilter==='ALL'||levelFilter==='KNOWN') ? true : levelFilter==='FAV' ? favs.has(x.id) : x.level===levelFilter;
     const searchOk = !q || norm(x.de).includes(q) || norm(x.tr).includes(q);
-    return levelOk && searchOk;
+    return searchOk;
   });
 }
 
@@ -162,6 +194,7 @@ function resetList(){
   levelText.textContent=levelNames[levelFilter]||levelFilter;
   favCount.textContent=favs.size.toLocaleString('tr-TR');
   knownCount.textContent=known.size.toLocaleString('tr-TR');
+  updateProgress();
   infoText.textContent = levelFilter==='ALL' ? 'Bildiklerin gizli. Aşağı kaydır.' :
     levelFilter==='FAV' ? `${favs.size} favori kelimen var.` :
     levelFilter==='KNOWN' ? `${known.size} kelimeyi biliyorsun. 🎉` :
@@ -196,14 +229,25 @@ list.addEventListener('click', e=>{
   const fv=e.target.closest('.fav-btn');
   if(fv){
     const id=Number(fv.dataset.id);
-    if(favs.has(id)) favs.delete(id); else favs.add(id);
+    const on=!favs.has(id);
+    if(on) favs.add(id); else favs.delete(id);
     saveFavs();
     favCount.textContent=favs.size.toLocaleString('tr-TR');
-    // update this button visually
-    const on=favs.has(id);
-    fv.className=`fav-btn w-9 h-9 rounded-full ${on?'bg-amber-100 text-amber-500 dark:bg-amber-900/40':'bg-ink/5 dark:bg-white/10 text-muted dark:text-white/50'} flex items-center justify-center`;
-    fv.querySelector('span').classList.toggle('fav-on', on);
-    if(levelFilter==='FAV' && !on){ resetList(); }
+    // In browsing views (ALL/levels) a favorited word leaves the list; in FAV view, un-favoriting removes it.
+    const inBrowse = !(levelFilter==='FAV'||levelFilter==='KNOWN');
+    const shouldVanish = (inBrowse && on) || (levelFilter==='FAV' && !on);
+    if(shouldVanish){
+      const card=fv.closest('article');
+      if(card){
+        card.style.transition='opacity .25s ease, transform .25s ease';
+        card.style.opacity='0'; card.style.transform='translateX(24px)';
+        setTimeout(resetList, 260);
+      } else { resetList(); }
+    } else {
+      // just toggle the star visual in place
+      fv.className=`fav-btn w-9 h-9 rounded-full ${on?'bg-amber-100 text-amber-500 dark:bg-amber-900/40':'bg-ink/5 dark:bg-white/10 text-muted dark:text-white/50'} flex items-center justify-center`;
+      fv.querySelector('span').classList.toggle('fav-on', on);
+    }
     return;
   }
   const kn=e.target.closest('.known-btn');
@@ -241,6 +285,49 @@ document.getElementById('themeToggle').addEventListener('click',()=>{
   theme=theme==='light'?'dark':'light';
   document.documentElement.setAttribute('data-theme',theme);
   document.querySelector('#themeToggle .material-symbols-outlined').textContent=theme==='light'?'dark_mode':'light_mode';
+});
+
+// ── Backup / Restore ──
+document.getElementById('backupBtn').addEventListener('click',()=>{
+  const data={
+    app:'LingoVibe', version:1, date:new Date().toISOString(),
+    known:[...known], favs:[...favs]
+  };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const stamp=new Date().toISOString().slice(0,10);
+  a.href=url; a.download=`lingovibe-yedek-${stamp}.json`;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); },100);
+});
+
+document.getElementById('restoreBtn').addEventListener('click',()=>document.getElementById('restoreFile').click());
+document.getElementById('restoreFile').addEventListener('change',e=>{
+  const file=e.target.files&&e.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const data=JSON.parse(reader.result);
+      const newKnown=Array.isArray(data.known)?data.known.map(Number):[];
+      const newFavs=Array.isArray(data.favs)?data.favs.map(Number):[];
+      const merge=confirm(`Yedek bulundu: ${newKnown.length} bilinen, ${newFavs.length} favori kelime.\n\nTAMAM = mevcutla birleştir\nİPTAL = sadece yedektekiler kalsın (değiştir)`);
+      if(merge){
+        newKnown.forEach(id=>known.add(id));
+        newFavs.forEach(id=>favs.add(id));
+      } else {
+        known=new Set(newKnown);
+        favs=new Set(newFavs);
+      }
+      saveKnown(); saveFavs(); resetList();
+      alert('Geri yükleme tamam! ✅');
+    }catch(err){
+      alert('Dosya okunamadı. Geçerli bir yedek dosyası mı?');
+    }
+    e.target.value='';
+  };
+  reader.readAsText(file);
 });
 
 // ── Init ──
