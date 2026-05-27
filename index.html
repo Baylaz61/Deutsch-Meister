@@ -117,17 +117,60 @@
       </div>
     </section>
 
-    <!-- ============ REVIEW TAB (flashcards placeholder) ============ -->
+    <!-- ============ REVIEW TAB (flashcards) ============ -->
     <section id="tab-review" class="tab-pane space-y-5 pt-1">
       <div class="rounded-[28px] p-6 bg-gradient-to-br from-deepteal to-teal text-white shadow-xl">
         <p class="text-xs font-bold tracking-widest text-white/60">TEKRAR</p>
         <h2 class="font-extrabold text-2xl mt-1">Kartlarla çalış</h2>
-        <p class="text-white/80 text-sm mt-1">Favori veya bilmediğin kelimelerden hızlı tekrar.</p>
+        <p class="text-white/80 text-sm mt-1">Gör, hatırla, çevir. Bildiğin kadar zamanlanır.</p>
+        <div class="flex gap-4 mt-4 text-sm">
+          <span class="flex items-center gap-1.5"><span class="material-symbols-rounded text-base fill text-amber-300">schedule</span><b id="rvDue">0</b> bugün</span>
+          <span class="flex items-center gap-1.5"><span class="material-symbols-rounded text-base fill text-mint">inventory_2</span><b id="rvPool">0</b> havuzda</span>
+        </div>
       </div>
-      <div id="reviewEmpty" class="rounded-2xl bg-white dark:bg-dcard p-8 text-center text-muted dark:text-white/50">
-        <span class="material-symbols-rounded text-4xl opacity-40">style</span>
-        <p class="mt-2 font-semibold">Flashcard modu yakında.</p>
-        <p class="text-sm mt-1">Şimdilik sözlükten favori ekleyip pratik yapabilirsin.</p>
+
+      <!-- Source picker -->
+      <div id="rvSetup" class="space-y-3">
+        <p class="font-bold px-1">Hangi kelimeleri çalışalım?</p>
+        <div class="grid grid-cols-1 gap-2" id="rvSourceRow">
+          <button class="rvSrc text-left rounded-2xl bg-white dark:bg-dcard p-4 shadow-sm flex items-center gap-3" data-src="fav"><span class="material-symbols-rounded text-amber-500">star</span><div class="flex-1"><p class="font-bold">Favorilerim</p><p class="text-xs text-muted dark:text-white/50"><span class="rvCount" data-c="fav">0</span> kelime</p></div><span class="material-symbols-rounded text-muted">chevron_right</span></button>
+          <button class="rvSrc text-left rounded-2xl bg-white dark:bg-dcard p-4 shadow-sm flex items-center gap-3" data-src="unknown"><span class="material-symbols-rounded text-teal dark:text-mint">menu_book</span><div class="flex-1"><p class="font-bold">Bilmediklerim</p><p class="text-xs text-muted dark:text-white/50">Henüz işaretlemediklerin</p></div><span class="material-symbols-rounded text-muted">chevron_right</span></button>
+          <button class="rvSrc text-left rounded-2xl bg-white dark:bg-dcard p-4 shadow-sm flex items-center gap-3" data-src="known"><span class="material-symbols-rounded text-emerald-500">task_alt</span><div class="flex-1"><p class="font-bold">Bildiklerimi tazele</p><p class="text-xs text-muted dark:text-white/50"><span class="rvCount" data-c="known">0</span> kelime</p></div><span class="material-symbols-rounded text-muted">chevron_right</span></button>
+        </div>
+        <div class="flex items-center gap-2 px-1 pt-1">
+          <span class="text-sm text-muted dark:text-white/50">Yön:</span>
+          <button id="rvDir" class="px-3 py-1.5 rounded-full bg-white dark:bg-dcard text-sm font-bold shadow-sm">🇩🇪 → 🇹🇷</button>
+        </div>
+      </div>
+
+      <!-- Flashcard -->
+      <div id="rvCardWrap" class="hidden">
+        <div id="rvProgress" class="h-2 rounded-full bg-teal/10 overflow-hidden mb-4"><div id="rvProgBar" class="h-full bg-gradient-to-r from-teal to-aqua transition-all" style="width:0%"></div></div>
+        <div id="rvCard" class="relative rounded-[28px] bg-white dark:bg-dcard shadow-xl min-h-[280px] flex flex-col items-center justify-center p-6 cursor-pointer select-none">
+          <span id="rvBadge" class="absolute top-4 left-4 px-2.5 py-1 rounded-full text-[11px] font-extrabold"></span>
+          <button id="rvSpeak" class="absolute top-3 right-3 w-10 h-10 rounded-full bg-teal/10 text-teal dark:text-mint flex items-center justify-center"><span class="material-symbols-rounded">volume_up</span></button>
+          <p id="rvFront" class="font-extrabold text-3xl text-center capitalize"></p>
+          <div id="rvBack" class="hidden mt-4 text-center">
+            <div class="w-16 h-px bg-ink/10 dark:bg-white/10 mx-auto mb-4"></div>
+            <p id="rvBackText" class="text-xl text-muted dark:text-white/70"></p>
+          </div>
+          <p id="rvHint" class="absolute bottom-4 text-xs text-muted/60 dark:text-white/30">Görmek için dokun</p>
+        </div>
+        <!-- Grading buttons -->
+        <div id="rvGrades" class="hidden grid grid-cols-3 gap-2 mt-4">
+          <button class="rvGrade py-4 rounded-2xl bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-300 font-extrabold flex flex-col items-center" data-g="hard"><span class="material-symbols-rounded">replay</span>Zor<span class="text-[10px] font-semibold opacity-70" id="rvHardWhen">yarın</span></button>
+          <button class="rvGrade py-4 rounded-2xl bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-300 font-extrabold flex flex-col items-center" data-g="good"><span class="material-symbols-rounded">check</span>İyi<span class="text-[10px] font-semibold opacity-70" id="rvGoodWhen">3 gün</span></button>
+          <button class="rvGrade py-4 rounded-2xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-300 font-extrabold flex flex-col items-center" data-g="easy"><span class="material-symbols-rounded">done_all</span>Kolay<span class="text-[10px] font-semibold opacity-70" id="rvEasyWhen">1 hafta</span></button>
+        </div>
+        <button id="rvStop" class="w-full py-3 mt-3 text-muted dark:text-white/50 font-bold">Bitir</button>
+      </div>
+
+      <!-- Done -->
+      <div id="rvDone" class="hidden rounded-2xl bg-white dark:bg-dcard p-8 text-center">
+        <span class="material-symbols-rounded text-5xl text-emerald-500 fill">celebration</span>
+        <p class="mt-2 font-extrabold text-xl">Tur tamamlandı! 🎉</p>
+        <p id="rvDoneText" class="text-sm text-muted dark:text-white/55 mt-1"></p>
+        <button id="rvAgain" class="mt-4 px-6 py-3 rounded-xl bg-gradient-to-br from-teal to-aqua text-white font-bold">Devam et</button>
       </div>
     </section>
 
@@ -178,6 +221,14 @@
         <button id="famFavAll" class="flex-1 py-2.5 rounded-xl bg-amber-400 text-white font-bold text-sm flex items-center justify-center gap-1.5"><span class="material-symbols-rounded text-lg">star</span>Hepsini favori</button>
       </div>
       <div id="famList" class="space-y-2 overflow-y-auto flex-1"></div>
+      <!-- Add a word to this group -->
+      <div class="mt-3 pt-3 border-t border-ink/10 dark:border-white/10">
+        <button id="famAddToggle" class="w-full py-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 dark:text-indigo-300 font-bold text-sm flex items-center justify-center gap-1.5"><span class="material-symbols-rounded text-lg">add_link</span>Bu gruba kelime ekle</button>
+        <div id="famAddPane" class="hidden mt-2">
+          <input id="famSearch" class="w-full px-4 py-3 rounded-xl bg-white dark:bg-dcard outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Eklemek istediğin kelimeyi ara...">
+          <div id="famSearchResults" class="space-y-1.5 mt-2 max-h-48 overflow-y-auto"></div>
+        </div>
+      </div>
       <button id="famClose" class="w-full py-3 mt-3 text-muted dark:text-white/50 font-bold">Kapat</button>
     </div>
   </div>
@@ -492,6 +543,7 @@ function switchTab(tab){
   document.querySelector('main').scrollTo({top:0});
   const fab=$('fabAdd'); if(fab) fab.style.display = (tab==='learn') ? 'flex' : 'none';
   if(tab==='stats') renderStats();
+  if(tab==='review') setupReview();
 }
 document.querySelectorAll('.navbtn').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
 document.querySelectorAll('.goto-tab').forEach(b=>b.addEventListener('click',()=>{levelFilter=b.dataset.goto==='fav'?'FAV':'KNOWN';resetList();switchTab('learn')}));
@@ -516,9 +568,125 @@ function renderStats(){
     ${rows}`;
 }
 
+// ── Flashcards + spaced repetition ──
+const SRS_KEY='fp_srs';
+let srs={};  // id -> {due: epochDay, interval: days, ef: easiness}
+try{ srs=JSON.parse(localStorage.getItem(SRS_KEY)||'{}'); }catch(e){}
+const saveSrs=()=>{try{localStorage.setItem(SRS_KEY,JSON.stringify(srs))}catch(e){}};
+const today=()=>Math.floor(Date.now()/864e5); // epoch day
+let rvQueue=[], rvIdx=0, rvFlipped=false, rvDir='de2tr', rvSource='fav', rvStats={done:0};
+
+function rvPoolFor(src){
+  if(src==='fav') return words.filter(w=>favs.has(w.id));
+  if(src==='known') return words.filter(w=>known.has(w.id));
+  // unknown = not known and not fav (the words you still need to learn)
+  return words.filter(w=>!known.has(w.id)&&!favs.has(w.id));
+}
+function rvDueCount(src){
+  const t=today();
+  return rvPoolFor(src).filter(w=>{ const s=srs[w.id]; return !s || s.due<=t; }).length;
+}
+function updateReviewHeader(){
+  // due across all sources (use the currently chosen-ish: show fav due as default headline)
+  const t=today();
+  const pool=rvPoolFor(rvSource);
+  const due=pool.filter(w=>{const s=srs[w.id];return !s||s.due<=t;}).length;
+  $('rvDue').textContent=due;
+  $('rvPool').textContent=pool.length;
+  document.querySelectorAll('.rvCount').forEach(el=>{
+    const c=el.dataset.c;
+    el.textContent=(c==='fav'?favs.size:c==='known'?known.size:'').toLocaleString('tr-TR');
+  });
+}
+function startReview(src){
+  rvSource=src;
+  const t=today();
+  // due first, then new; cap a session at 20
+  const pool=rvPoolFor(src);
+  const due=pool.filter(w=>{const s=srs[w.id];return s&&s.due<=t;});
+  const fresh=pool.filter(w=>!srs[w.id]);
+  rvQueue=[...due,...fresh].slice(0,20);
+  if(rvQueue.length===0){ rvQueue=pool.slice(0,20); } // nothing scheduled: just study some
+  if(rvQueue.length===0){ alert('Bu grupta çalışılacak kelime yok. Önce sözlükten favori ekle.'); return; }
+  rvIdx=0; rvStats={done:0};
+  $('rvSetup').classList.add('hidden');
+  $('rvDone').classList.add('hidden');
+  $('rvCardWrap').classList.remove('hidden');
+  showCard();
+}
+function showCard(){
+  rvFlipped=false;
+  const w=rvQueue[rvIdx];
+  const ai=articleInfo(w);
+  $('rvBadge').textContent=w.level+(ai.art?' · '+ai.art:'');
+  $('rvBadge').className=`absolute top-4 left-4 px-2.5 py-1 rounded-full text-[11px] font-extrabold ${ai.art?ai.cls:'bg-teal/10 text-teal dark:text-mint'}`;
+  if(rvDir==='de2tr'){ $('rvFront').textContent=(ai.art?ai.art+' ':'')+w.de; $('rvBackText').textContent=w.tr; }
+  else { $('rvFront').textContent=w.tr; $('rvBackText').textContent=(ai.art?ai.art+' ':'')+w.de; }
+  $('rvBack').classList.add('hidden');
+  $('rvGrades').classList.add('hidden');
+  $('rvHint').classList.remove('hidden');
+  $('rvProgBar').style.width=(rvIdx/rvQueue.length*100)+'%';
+}
+function flipCard(){
+  if(rvFlipped) return;
+  rvFlipped=true;
+  $('rvBack').classList.remove('hidden');
+  $('rvGrades').classList.remove('hidden');
+  $('rvHint').classList.add('hidden');
+  // update interval previews
+  const w=rvQueue[rvIdx]; const s=srs[w.id]||{interval:0,ef:2.5};
+  const calc=(g)=>nextInterval(s,g).interval;
+  $('rvHardWhen').textContent=fmtDays(calc('hard'));
+  $('rvGoodWhen').textContent=fmtDays(calc('good'));
+  $('rvEasyWhen').textContent=fmtDays(calc('easy'));
+}
+function fmtDays(d){ return d<=1?'yarın':d<7?d+' gün':d<30?Math.round(d/7)+' hafta':Math.round(d/30)+' ay'; }
+// simplified SM-2-ish
+function nextInterval(s,g){
+  let ef=s.ef||2.5, interval=s.interval||0;
+  if(g==='hard'){ ef=Math.max(1.3,ef-0.2); interval=1; }
+  else if(g==='good'){ interval = interval<1?2 : Math.round(interval*ef); }
+  else if(g==='easy'){ ef=ef+0.15; interval = interval<1?4 : Math.round(interval*ef*1.3); }
+  return {interval, ef};
+}
+function gradeCard(g){
+  const w=rvQueue[rvIdx];
+  const prev=srs[w.id]||{interval:0,ef:2.5};
+  const ni=nextInterval(prev,g);
+  srs[w.id]={due:today()+ni.interval, interval:ni.interval, ef:ni.ef, last:today()};
+  saveSrs();
+  rvStats.done++;
+  rvIdx++;
+  if(rvIdx>=rvQueue.length){ finishReview(); }
+  else showCard();
+}
+function finishReview(){
+  $('rvCardWrap').classList.add('hidden');
+  $('rvDone').classList.remove('hidden');
+  $('rvDoneText').textContent=`${rvStats.done} kelime çalıştın. Vakti gelince tekrar karşına çıkacaklar.`;
+  updateReviewHeader();
+}
+function setupReview(){
+  $('rvSetup').classList.remove('hidden');
+  $('rvCardWrap').classList.add('hidden');
+  $('rvDone').classList.add('hidden');
+  updateReviewHeader();
+}
+// events
+document.querySelectorAll('.rvSrc').forEach(b=>b.addEventListener('click',()=>startReview(b.dataset.src)));
+$('rvCard').addEventListener('click',e=>{ if(e.target.closest('#rvSpeak')) return; flipCard(); });
+$('rvSpeak').addEventListener('click',()=>{ const w=rvQueue[rvIdx]; if(w) speak(w.de); });
+document.querySelectorAll('.rvGrade').forEach(b=>b.addEventListener('click',()=>gradeCard(b.dataset.g)));
+$('rvStop').addEventListener('click',setupReview);
+$('rvAgain').addEventListener('click',()=>startReview(rvSource));
+$('rvDir').addEventListener('click',()=>{
+  rvDir = rvDir==='de2tr' ? 'tr2de' : 'de2tr';
+  $('rvDir').textContent = rvDir==='de2tr' ? '🇩🇪 → 🇹🇷' : '🇹🇷 → 🇩🇪';
+});
+
 // Backup / Restore
 function doBackup(){
-  const data={app:'FluidPolyglot',version:2,date:new Date().toISOString(),known:[...known],favs:[...favs],custom:customWords};
+  const data={app:'FluidPolyglot',version:3,date:new Date().toISOString(),known:[...known],favs:[...favs],custom:customWords,groups:groupOverrides,srs:srs};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob),a=document.createElement('a');
   a.href=url;a.download=`fluidpolyglot-yedek-${new Date().toISOString().slice(0,10)}.json`;
@@ -546,6 +714,19 @@ $('restoreFile').addEventListener('change',e=>{
     }
     nextCustomId=customWords.reduce((m,w)=>Math.max(m,w.id),100000)+1;
     TOTAL=words.length;
+    // restore grouping overrides if present
+    if(d.groups && typeof d.groups==='object'){
+      const g=d.groups;
+      if(merge){
+        Object.assign(groupOverrides.moved, g.moved||{});
+        Object.assign(groupOverrides.detached, g.detached||{});
+      } else {
+        groupOverrides.moved=g.moved||{}; groupOverrides.detached=g.detached||{};
+      }
+      saveGroups();
+    }
+    buildGroups();
+    if(d.srs && typeof d.srs==='object'){ if(merge){ Object.assign(srs,d.srs); } else { srs=d.srs; } saveSrs(); }
     saveKnown();saveFavs();saveCustom();resetList();if(activeTab==='stats')renderStats();alert('Geri yükleme tamam! ✅');
   }catch(err){alert('Dosya okunamadı.')}e.target.value=''};
   r.readAsText(f);
@@ -572,6 +753,9 @@ function openFamily(id){
   const fam=familyOf(x);
   const all=[x,...fam];
   $('famSubtitle').textContent=`"${x.de}" ile aynı kökten ${all.length} kelime`;
+  // reset add-to-group panel
+  $('famAddPane').classList.add('hidden');
+  $('famSearch').value=''; $('famSearchResults').innerHTML='';
   renderFamList();
   famModal.classList.remove('hidden');
 }
@@ -600,6 +784,52 @@ function renderFamList(){
 }
 $('famClose').addEventListener('click',closeFamily);
 $('famBackdrop').addEventListener('click',closeFamily);
+
+// Add a word to the current group
+function addWordToGroup(id){
+  const target=words.find(w=>w.id===famCurrentId); if(!target) return;
+  const targetStem=effectiveStem(target);
+  // remove any detached flag and set its group to the target's stem
+  delete groupOverrides.detached[id];
+  groupOverrides.moved[id]=targetStem;
+  saveGroups(); buildGroups();
+  $('famSearch').value=''; $('famSearchResults').innerHTML='';
+  renderFamList();
+  resetList();
+  // update subtitle count
+  const fam=familyOf(target);
+  $('famSubtitle').textContent=`"${target.de}" ile aynı kökten ${fam.length+1} kelime`;
+}
+$('famAddToggle').addEventListener('click',()=>{
+  const p=$('famAddPane'); p.classList.toggle('hidden');
+  if(!p.classList.contains('hidden')) $('famSearch').focus();
+});
+let famSearchTimer=null;
+$('famSearch').addEventListener('input',e=>{
+  clearTimeout(famSearchTimer);
+  famSearchTimer=setTimeout(()=>{
+    const q=norm(e.target.value.trim());
+    const box=$('famSearchResults');
+    if(!q){ box.innerHTML=''; return; }
+    const target=words.find(w=>w.id===famCurrentId);
+    const inGroup=new Set([target.id,...familyOf(target).map(f=>f.id)]);
+    const hits=words.filter(w=>!inGroup.has(w.id) && (norm(w.de).includes(q)||norm(w.tr).includes(q))).slice(0,12);
+    if(!hits.length){ box.innerHTML='<p class="text-sm text-muted dark:text-white/50 text-center py-2">Sonuç yok.</p>'; return; }
+    box.innerHTML=hits.map(w=>{
+      const ai=articleInfo(w);
+      return `<button class="famAddItem w-full text-left bg-white dark:bg-dcard rounded-xl p-2.5 flex items-center gap-2 border-l-4" style="border-left-color:${ai.dot}" data-id="${w.id}">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-1.5"><span class="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-teal/10 text-teal dark:text-mint">${esc(w.level)}</span><span class="font-bold capitalize">${esc(w.de)}</span></div>
+          <p class="text-xs text-muted dark:text-white/50">${esc(w.tr)}</p>
+        </div>
+        <span class="material-symbols-rounded text-indigo-500">add_circle</span>
+      </button>`;
+    }).join('');
+  },180);
+});
+$('famSearchResults').addEventListener('click',e=>{
+  const b=e.target.closest('.famAddItem'); if(b) addWordToGroup(Number(b.dataset.id));
+});
 $('famKnowAll').addEventListener('click',()=>{
   const x=words.find(w=>w.id===famCurrentId); if(!x) return;
   [x,...familyOf(x)].forEach(w=>known.add(w.id));
