@@ -153,6 +153,14 @@
           <div id="rvBack" class="hidden mt-4 text-center">
             <div class="w-16 h-px bg-ink/10 dark:bg-white/10 mx-auto mb-4"></div>
             <p id="rvBackText" class="text-xl text-muted dark:text-white/70"></p>
+            <div id="rvExample" class="mt-4 hidden">
+              <div class="rounded-2xl bg-teal/5 dark:bg-white/5 p-3 text-left mx-2">
+                <div class="flex items-center gap-1.5 mb-1"><span class="material-symbols-rounded text-sm text-teal dark:text-mint">format_quote</span><span class="text-[11px] font-bold text-teal dark:text-mint">ÖRNEK CÜMLE</span><button id="rvExSpeak" class="ml-auto w-7 h-7 rounded-full bg-teal/10 text-teal dark:text-mint flex items-center justify-center"><span class="material-symbols-rounded text-base">volume_up</span></button></div>
+                <p id="rvExDe" class="font-semibold text-base"></p>
+                <p id="rvExTr" class="text-sm text-muted dark:text-white/55 mt-0.5"></p>
+              </div>
+            </div>
+            <button id="rvExBtn" class="mt-3 px-4 py-2 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 dark:text-indigo-300 font-bold text-sm inline-flex items-center gap-1.5"><span class="material-symbols-rounded text-lg">auto_awesome</span>Örnek cümle göster</button>
           </div>
           <p id="rvHint" class="absolute bottom-4 text-xs text-muted/60 dark:text-white/30">Görmek için dokun</p>
         </div>
@@ -198,6 +206,22 @@
           <button id="restoreBtn2" class="flex-1 py-3 rounded-xl bg-white dark:bg-dsoft border-2 border-teal/20 text-teal dark:text-mint font-bold flex items-center justify-center gap-2"><span class="material-symbols-rounded text-lg">upload</span>Geri Yükle</button>
         </div>
         <button id="resetKnown" class="w-full py-3 rounded-xl text-rose-500 font-bold text-sm">Bildiklerimi sıfırla</button>
+      </div>
+
+      <!-- AI / API settings -->
+      <div class="rounded-2xl bg-white dark:bg-dcard p-5 shadow-sm space-y-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-rounded text-indigo-500">auto_awesome</span>
+          <h3 class="font-extrabold">Yapay zeka örnek cümleler</h3>
+        </div>
+        <p class="text-sm text-muted dark:text-white/60">Tekrar kartlarında "Örnek cümle göster" için bir Google Gemini API anahtarı gerekir. Bir kere gir, kaydedilsin.</p>
+        <div id="apiKeyStatus" class="text-sm font-bold"></div>
+        <input id="apiKeyInput" type="password" class="w-full px-4 py-3 rounded-xl bg-softbg dark:bg-dsoft outline-none focus:ring-2 focus:ring-indigo-300" placeholder="API anahtarını yapıştır (AIza...)">
+        <div class="flex gap-2">
+          <button id="apiKeySave" class="flex-1 py-3 rounded-xl bg-indigo-500 text-white font-bold">Kaydet</button>
+          <button id="apiKeyClear" class="px-4 py-3 rounded-xl bg-white dark:bg-dsoft border-2 border-rose-200 text-rose-500 font-bold">Sil</button>
+        </div>
+        <a href="https://aistudio.google.com/apikey" target="_blank" class="block text-center text-sm text-indigo-500 dark:text-indigo-300 font-bold underline">Ücretsiz API anahtarı nasıl alınır? →</a>
       </div>
     </section>
 
@@ -544,6 +568,7 @@ function switchTab(tab){
   const fab=$('fabAdd'); if(fab) fab.style.display = (tab==='learn') ? 'flex' : 'none';
   if(tab==='stats') renderStats();
   if(tab==='review') setupReview();
+  if(tab==='profile') refreshApiKeyStatus();
 }
 document.querySelectorAll('.navbtn').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
 document.querySelectorAll('.goto-tab').forEach(b=>b.addEventListener('click',()=>{levelFilter=b.dataset.goto==='fav'?'FAV':'KNOWN';resetList();switchTab('learn')}));
@@ -626,6 +651,12 @@ function showCard(){
   $('rvGrades').classList.add('hidden');
   $('rvHint').classList.remove('hidden');
   $('rvProgBar').style.width=(rvIdx/rvQueue.length*100)+'%';
+  // reset example area
+  $('rvExample').classList.add('hidden');
+  $('rvExDe').textContent=''; $('rvExTr').textContent='';
+  const exBtn=$('rvExBtn');
+  exBtn.classList.remove('hidden'); exBtn.disabled=false;
+  exBtn.innerHTML='<span class="material-symbols-rounded text-lg">auto_awesome</span>Örnek cümle göster';
 }
 function flipCard(){
   if(rvFlipped) return;
@@ -684,9 +715,91 @@ $('rvDir').addEventListener('click',()=>{
   $('rvDir').textContent = rvDir==='de2tr' ? '🇩🇪 → 🇹🇷' : '🇹🇷 → 🇩🇪';
 });
 
+// ── API key management ──
+const APIKEY_KEY='fp_gemini_key';
+function getApiKey(){ try{ return localStorage.getItem(APIKEY_KEY)||''; }catch(e){ return ''; } }
+function setApiKey(k){ try{ localStorage.setItem(APIKEY_KEY,k); }catch(e){} }
+function refreshApiKeyStatus(){
+  const k=getApiKey();
+  const el=$('apiKeyStatus'); if(!el) return;
+  if(k){ el.innerHTML='<span class="text-emerald-500">✓ Anahtar kayıtlı, hazır.</span>'; $('apiKeyInput').placeholder='•••• kayıtlı (değiştirmek için yeni yapıştır)'; }
+  else { el.innerHTML='<span class="text-rose-400">Henüz anahtar yok.</span>'; }
+}
+if($('apiKeySave')) $('apiKeySave').addEventListener('click',()=>{
+  const k=$('apiKeyInput').value.trim();
+  if(!k){ alert('Lütfen anahtarı yapıştır.'); return; }
+  setApiKey(k); $('apiKeyInput').value=''; refreshApiKeyStatus(); alert('API anahtarı kaydedildi! ✅');
+});
+if($('apiKeyClear')) $('apiKeyClear').addEventListener('click',()=>{
+  if(confirm('Kayıtlı API anahtarı silinsin mi?')){ setApiKey(''); refreshApiKeyStatus(); }
+});
+
+// ── Example sentence via Gemini ──
+const exampleCache={}; // id -> {de,tr}  (session cache; persistent below)
+const EX_KEY='fp_examples';
+let exampleStore={};
+try{ exampleStore=JSON.parse(localStorage.getItem(EX_KEY)||'{}'); }catch(e){}
+const saveExamples=()=>{try{localStorage.setItem(EX_KEY,JSON.stringify(exampleStore))}catch(e){}};
+
+async function fetchExample(word){
+  // cached?
+  if(exampleStore[word.id]) return exampleStore[word.id];
+  const key=getApiKey();
+  if(!key){ throw new Error('NO_KEY'); }
+  const art=word.art?word.art+' ':'';
+  const prompt=`Du bist ein Deutschlehrer. Bilde EINEN einfachen, natürlichen deutschen Beispielsatz (A1-A2 Niveau) mit dem Wort "${art}${word.de}" (Bedeutung auf Türkisch: ${word.tr}). Gib NUR ein JSON-Objekt zurück, ohne Markdown, im Format: {"de":"deutscher Satz","tr":"türkische Übersetzung"}`;
+  const models=['gemini-3.5-flash','gemini-2.5-flash','gemini-2.5-flash-lite'];
+  let lastErr=null;
+  for(const model of models){
+    try{
+      const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-goog-api-key':key},
+        body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})
+      });
+      if(!res.ok){ lastErr=new Error('HTTP '+res.status); if(res.status===400||res.status===403){ throw new Error('BAD_KEY'); } continue; }
+      const data=await res.json();
+      let txt=(data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts&&data.candidates[0].content.parts[0]&&data.candidates[0].content.parts[0].text)||'';
+      txt=txt.replace(/```json|```/g,'').trim();
+      const obj=JSON.parse(txt);
+      const out={de:obj.de||'',tr:obj.tr||''};
+      exampleStore[word.id]=out; saveExamples();
+      return out;
+    }catch(e){ lastErr=e; if(e.message==='BAD_KEY') throw e; }
+  }
+  throw lastErr||new Error('FAIL');
+}
+
+$('rvExBtn').addEventListener('click',async()=>{
+  const w=rvQueue[rvIdx]; if(!w) return;
+  const btn=$('rvExBtn');
+  if(!getApiKey()){
+    if(confirm('Örnek cümle için Gemini API anahtarı gerekli. Profil sekmesinde ayarlamak ister misin?')){
+      switchTab('profile');
+    }
+    return;
+  }
+  btn.disabled=true;
+  btn.innerHTML='<span class="material-symbols-rounded text-lg animate-spin">progress_activity</span>Üretiliyor...';
+  try{
+    const ex=await fetchExample(w);
+    $('rvExDe').textContent=ex.de;
+    $('rvExTr').textContent=ex.tr;
+    $('rvExample').classList.remove('hidden');
+    btn.classList.add('hidden');
+  }catch(e){
+    btn.disabled=false;
+    btn.innerHTML='<span class="material-symbols-rounded text-lg">auto_awesome</span>Tekrar dene';
+    if(e.message==='BAD_KEY'){ alert('API anahtarı geçersiz görünüyor. Profil sekmesinden kontrol et.'); }
+    else if(e.message==='NO_KEY'){ alert('API anahtarı yok. Profil sekmesinden ekle.'); }
+    else { alert('Cümle alınamadı. İnternet bağlantını kontrol et, tekrar dene.'); }
+  }
+});
+$('rvExSpeak').addEventListener('click',()=>{ const t=$('rvExDe').textContent; if(t) speak(t); });
+
 // Backup / Restore
 function doBackup(){
-  const data={app:'FluidPolyglot',version:3,date:new Date().toISOString(),known:[...known],favs:[...favs],custom:customWords,groups:groupOverrides,srs:srs};
+  const data={app:'FluidPolyglot',version:3,date:new Date().toISOString(),known:[...known],favs:[...favs],custom:customWords,groups:groupOverrides,srs:srs,examples:exampleStore};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob),a=document.createElement('a');
   a.href=url;a.download=`fluidpolyglot-yedek-${new Date().toISOString().slice(0,10)}.json`;
@@ -727,6 +840,7 @@ $('restoreFile').addEventListener('change',e=>{
     }
     buildGroups();
     if(d.srs && typeof d.srs==='object'){ if(merge){ Object.assign(srs,d.srs); } else { srs=d.srs; } saveSrs(); }
+    if(d.examples && typeof d.examples==='object'){ if(merge){ Object.assign(exampleStore,d.examples); } else { exampleStore=d.examples; } saveExamples(); }
     saveKnown();saveFavs();saveCustom();resetList();if(activeTab==='stats')renderStats();alert('Geri yükleme tamam! ✅');
   }catch(err){alert('Dosya okunamadı.')}e.target.value=''};
   r.readAsText(f);
