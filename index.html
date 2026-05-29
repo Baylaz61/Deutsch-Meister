@@ -182,6 +182,62 @@
       </div>
     </section>
 
+    <!-- ============ WRITE / CORRECT TAB ============ -->
+    <section id="tab-write" class="tab-pane space-y-5 pt-1">
+      <div class="rounded-[28px] p-6 bg-gradient-to-br from-aqua to-mint text-deepteal shadow-xl">
+        <p class="text-xs font-bold tracking-widest text-deepteal/60">DÜZELT & ÇEVİR</p>
+        <h2 class="font-extrabold text-2xl mt-1">Cümleni yaz</h2>
+        <p class="text-deepteal/80 text-sm mt-1">Türkçe ya da Almanca yaz — düzgün günlük Almancaya çevirelim. Hepsi kaydedilir.</p>
+      </div>
+
+      <div class="rounded-2xl bg-white dark:bg-dcard p-4 shadow-sm space-y-3">
+        <textarea id="wrInput" rows="3" class="w-full px-4 py-3 rounded-xl bg-softbg dark:bg-dsoft outline-none focus:ring-2 focus:ring-aqua resize-none" placeholder="Türkçe veya Almanca yaz... (örn: 'dün sinemaya gittim' ya da 'Ich habe gestern ins Kino gegangen')"></textarea>
+        <button id="wrCheck" class="w-full py-3.5 rounded-xl bg-gradient-to-br from-teal to-aqua text-white font-extrabold shadow-lg shadow-teal/30 flex items-center justify-center gap-2"><span class="material-symbols-rounded">auto_fix_high</span>Düzelt / Çevir</button>
+      </div>
+
+      <!-- Result -->
+      <div id="wrResult" class="hidden space-y-3">
+        <div class="rounded-2xl bg-white dark:bg-dcard p-4 shadow-sm">
+          <div class="flex items-center gap-1.5 mb-2">
+            <span class="material-symbols-rounded text-emerald-500 text-lg">check_circle</span>
+            <span class="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 tracking-wide">DOĞRU ALMANCA</span>
+            <span id="wrDetected" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 dark:text-indigo-300"></span>
+            <button id="wrSpeak" class="ml-auto w-8 h-8 rounded-full bg-teal/10 text-teal dark:text-mint flex items-center justify-center"><span class="material-symbols-rounded text-lg">volume_up</span></button>
+          </div>
+          <p id="wrCorrected" class="font-bold text-lg leading-relaxed"></p>
+          <div class="w-full h-px bg-ink/5 dark:bg-white/10 my-3"></div>
+          <p id="wrTr" class="text-sm text-muted dark:text-white/60"></p>
+          <!-- wrong detection helper -->
+          <button id="wrToggleLang" class="mt-3 text-xs font-bold text-indigo-500 dark:text-indigo-300 underline">Dili yanlış mı algıladı? Diğer dil olarak dene</button>
+        </div>
+
+        <div id="wrLegend" class="flex items-center gap-3 text-xs font-bold px-1 flex-wrap">
+          <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-emerald-200 dark:bg-emerald-800"></span>eklenen/düzeltilen</span>
+          <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-rose-200 dark:bg-rose-800 line-through">x</span>çıkarılan</span>
+        </div>
+
+        <div id="wrAlts" class="rounded-2xl bg-white dark:bg-dcard p-4 shadow-sm">
+          <div class="flex items-center gap-1.5 mb-2"><span class="material-symbols-rounded text-indigo-500 text-lg">forum</span><span class="text-[11px] font-extrabold text-indigo-500 dark:text-indigo-300 tracking-wide">GÜNLÜK SÖYLEYİŞLER</span></div>
+          <div id="wrAltList" class="space-y-2"></div>
+        </div>
+      </div>
+
+      <div id="wrEmpty" class="rounded-2xl bg-white dark:bg-dcard p-8 text-center text-muted dark:text-white/50">
+        <span class="material-symbols-rounded text-4xl opacity-40">edit_note</span>
+        <p class="mt-2 font-semibold">Bir cümle yaz, "Düzelt / Çevir"e bas.</p>
+        <p class="text-sm mt-1">Türkçe de yazabilirsin, Almanca da. Doğru hali burada çıkar.</p>
+      </div>
+
+      <!-- Sentence pool -->
+      <div id="wrPoolWrap" class="hidden space-y-2">
+        <div class="flex items-center justify-between px-1">
+          <h3 class="font-extrabold flex items-center gap-1.5"><span class="material-symbols-rounded text-teal dark:text-mint">bookmark</span>Cümle havuzum (<span id="wrPoolCount">0</span>)</h3>
+          <button id="wrPoolClear" class="text-xs font-bold text-rose-400">Tümünü sil</button>
+        </div>
+        <div id="wrPoolList" class="space-y-2"></div>
+      </div>
+    </section>
+
     <!-- ============ STATS TAB ============ -->
     <section id="tab-stats" class="tab-pane space-y-5 pt-1">
       <div class="rounded-[28px] p-6 bg-gradient-to-br from-aqua to-mint text-deepteal shadow-xl">
@@ -305,10 +361,11 @@
   <!-- Bottom navigation -->
   <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-50">
     <div class="m-3 rounded-[24px] bg-white/95 dark:bg-dcard/95 backdrop-blur shadow-2xl shadow-ink/10 flex items-center justify-around py-2 border border-white/50 dark:border-white/5">
-      <button data-tab="learn" class="navbtn flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-2xl"><span class="material-symbols-rounded">menu_book</span><span class="text-[10px] font-bold">Sözlük</span></button>
-      <button data-tab="review" class="navbtn flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-2xl"><span class="material-symbols-rounded">style</span><span class="text-[10px] font-bold">Tekrar</span></button>
-      <button data-tab="stats" class="navbtn flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-2xl"><span class="material-symbols-rounded">bar_chart</span><span class="text-[10px] font-bold">İstatistik</span></button>
-      <button data-tab="profile" class="navbtn flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-2xl"><span class="material-symbols-rounded">person</span><span class="text-[10px] font-bold">Profil</span></button>
+      <button data-tab="learn" class="navbtn flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-2xl"><span class="material-symbols-rounded">menu_book</span><span class="text-[10px] font-bold">Sözlük</span></button>
+      <button data-tab="review" class="navbtn flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-2xl"><span class="material-symbols-rounded">style</span><span class="text-[10px] font-bold">Tekrar</span></button>
+      <button data-tab="write" class="navbtn flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-2xl"><span class="material-symbols-rounded">edit_note</span><span class="text-[10px] font-bold">Düzelt</span></button>
+      <button data-tab="stats" class="navbtn flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-2xl"><span class="material-symbols-rounded">bar_chart</span><span class="text-[10px] font-bold">İstatistik</span></button>
+      <button data-tab="profile" class="navbtn flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-2xl"><span class="material-symbols-rounded">person</span><span class="text-[10px] font-bold">Profil</span></button>
     </div>
   </nav>
 
@@ -561,7 +618,7 @@ function switchTab(tab){
   $('tab-'+tab).classList.add('active');
   document.querySelectorAll('.navbtn').forEach(b=>{
     const on=b.dataset.tab===tab;
-    b.className=`navbtn flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-2xl ${on?'text-white bg-gradient-to-br from-teal to-aqua shadow-lg shadow-teal/30':'text-muted dark:text-white/40'}`;
+    b.className=`navbtn flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-2xl ${on?'text-white bg-gradient-to-br from-teal to-aqua shadow-lg shadow-teal/30':'text-muted dark:text-white/40'}`;
     b.querySelector('span.material-symbols-rounded').classList.toggle('fill',on);
   });
   document.querySelector('main').scrollTo({top:0});
@@ -569,6 +626,7 @@ function switchTab(tab){
   if(tab==='stats') renderStats();
   if(tab==='review') setupReview();
   if(tab==='profile') refreshApiKeyStatus();
+  if(tab==='write') renderPool();
 }
 document.querySelectorAll('.navbtn').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
 document.querySelectorAll('.goto-tab').forEach(b=>b.addEventListener('click',()=>{levelFilter=b.dataset.goto==='fav'?'FAV':'KNOWN';resetList();switchTab('learn')}));
@@ -797,9 +855,136 @@ $('rvExBtn').addEventListener('click',async()=>{
 });
 $('rvExSpeak').addEventListener('click',()=>{ const t=$('rvExDe').textContent; if(t) speak(t); });
 
+// ── Sentence correction / translation (Write/Düzelt tab) ──
+async function correctSentence(sentence, forceLang){
+  const key=getApiKey();
+  if(!key) throw new Error('NO_KEY');
+  const langInstruction = forceLang==='tr'
+    ? 'Der Text ist TÜRKISCH. Übersetze ihn in natürliches, alltägliches gesprochenes Deutsch.'
+    : forceLang==='de'
+    ? 'Der Text ist DEUTSCH (kann Fehler enthalten). Korrigiere ihn in natürliches, alltägliches gesprochenes Deutsch.'
+    : 'Erkenne zuerst, ob der Text TÜRKISCH oder DEUTSCH ist. Wenn Türkisch: übersetze ins alltägliche Deutsch. Wenn Deutsch (evtl. mit Fehlern): korrigiere ins alltägliche, natürliche Deutsch.';
+  const prompt=`Du bist ein freundlicher Deutschlehrer für türkische Lerner (Niveau B1). ${langInstruction} Verwende ALLTÄGLICHES gesprochenes Deutsch, nicht akademisch.
+
+Eingabe des Schülers: "${sentence}"
+
+Gib NUR ein JSON-Objekt zurück (kein Markdown), in diesem Format:
+{
+  "lang": "tr" oder "de" (die erkannte Sprache der Eingabe),
+  "corrected": "der vollständige korrekte deutsche Satz",
+  "diff": [ {"t":"text ","s":"same"}, {"t":"text","s":"add"}, {"t":"text","s":"del"} ],
+  "tr": "türkische Übersetzung des deutschen Satzes",
+  "alternatives": ["alltägliche Variante 1", "alltägliche Variante 2"]
+}
+
+Für "diff": Wenn die Eingabe Deutsch war, zeige Stück für Stück: "same"=unverändert, "add"=korrigiert/hinzugefügt, "del"=Fehler des Schülers der entfernt wurde. Wenn die Eingabe Türkisch war, setze das ganze deutsche Ergebnis als ein "add"-Stück. Halte Alternativen kurz und umgangssprachlich.`;
+  const models=['gemini-3.5-flash','gemini-2.5-flash','gemini-2.5-flash-lite'];
+  let lastErr=null;
+  for(const model of models){
+    try{
+      const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-goog-api-key':key},
+        body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})
+      });
+      if(!res.ok){ lastErr=new Error('HTTP '+res.status); if(res.status===400||res.status===403) throw new Error('BAD_KEY'); continue; }
+      const data=await res.json();
+      let txt=(data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts&&data.candidates[0].content.parts[0]&&data.candidates[0].content.parts[0].text)||'';
+      txt=txt.replace(/```json|```/g,'').trim();
+      return JSON.parse(txt);
+    }catch(e){ lastErr=e; if(e.message==='BAD_KEY') throw e; }
+  }
+  throw lastErr||new Error('FAIL');
+}
+function renderDiff(diff, corrected){
+  if(!Array.isArray(diff)||!diff.length){ return esc(corrected||''); }
+  return diff.map(p=>{
+    const t=esc(p.t||'');
+    if(p.s==='add') return `<span class="bg-emerald-200/70 dark:bg-emerald-800/60 text-emerald-900 dark:text-emerald-100 rounded px-0.5">${t}</span>`;
+    if(p.s==='del') return `<span class="bg-rose-200/70 dark:bg-rose-800/60 text-rose-700 dark:text-rose-200 rounded px-0.5 line-through opacity-70">${t}</span>`;
+    return `<span>${t}</span>`;
+  }).join('');
+}
+// ── Sentence pool (persistent) ──
+const POOL_KEY='fp_pool';
+let sentencePool=[];
+try{ sentencePool=JSON.parse(localStorage.getItem(POOL_KEY)||'[]'); }catch(e){}
+const savePool=()=>{try{localStorage.setItem(POOL_KEY,JSON.stringify(sentencePool))}catch(e){}};
+let lastInput='', lastLang='';
+
+function showCorrection(r){
+  $('wrCorrected').innerHTML=renderDiff(r.diff, r.corrected);
+  $('wrCorrected').dataset.plain=r.corrected||'';
+  $('wrTr').textContent=r.tr||'';
+  $('wrDetected').textContent = r.lang==='tr' ? 'TR → DE çeviri' : 'DE düzeltme';
+  const alts=Array.isArray(r.alternatives)?r.alternatives:[];
+  $('wrAltList').innerHTML = alts.length ? alts.map(a=>`<div class="flex items-start gap-2 bg-softbg dark:bg-dsoft rounded-xl p-2.5"><button class="wrAltSpeak w-7 h-7 rounded-full bg-teal/10 text-teal dark:text-mint flex items-center justify-center shrink-0" data-t="${esc(a)}"><span class="material-symbols-rounded text-base">volume_up</span></button><p class="text-sm font-semibold flex-1">${esc(a)}</p></div>`).join('') : '<p class="text-sm text-muted dark:text-white/50">Alternatif yok.</p>';
+  $('wrAlts').style.display = alts.length ? 'block':'none';
+  $('wrEmpty').classList.add('hidden');
+  $('wrResult').classList.remove('hidden');
+}
+function addToPool(input, r){
+  sentencePool.unshift({ id:Date.now(), input, lang:r.lang||'', corrected:r.corrected||'', tr:r.tr||'', date:new Date().toISOString() });
+  if(sentencePool.length>500) sentencePool=sentencePool.slice(0,500);
+  savePool(); renderPool();
+}
+function renderPool(){
+  $('wrPoolCount').textContent=sentencePool.length;
+  $('wrPoolWrap').classList.toggle('hidden', sentencePool.length===0);
+  $('wrPoolList').innerHTML=sentencePool.map(p=>`
+    <div class="bg-white dark:bg-dcard rounded-2xl p-3.5 shadow-sm flex items-start gap-2">
+      <div class="flex-1 min-w-0">
+        <p class="font-bold break-words">${esc(p.corrected)}</p>
+        <p class="text-sm text-muted dark:text-white/55 mt-0.5">${esc(p.tr)}</p>
+        ${p.input&&p.input!==p.corrected?`<p class="text-xs text-muted/70 dark:text-white/35 mt-1 italic">yazdığın: ${esc(p.input)}</p>`:''}
+      </div>
+      <button class="poolSpeak w-8 h-8 rounded-full bg-teal/10 text-teal dark:text-mint flex items-center justify-center shrink-0" data-t="${esc(p.corrected)}"><span class="material-symbols-rounded text-lg">volume_up</span></button>
+      <button class="poolDel w-8 h-8 rounded-full bg-rose-50 dark:bg-rose-900/30 text-rose-400 flex items-center justify-center shrink-0" data-id="${p.id}"><span class="material-symbols-rounded text-lg">delete</span></button>
+    </div>`).join('');
+}
+
+async function runCorrection(forceLang){
+  const s=$('wrInput').value.trim();
+  if(!s){ alert('Önce bir cümle yaz.'); return; }
+  if(!getApiKey()){
+    if(confirm('Bu özellik için Gemini API anahtarı gerekli. Profil sekmesinde ayarlamak ister misin?')) switchTab('profile');
+    return;
+  }
+  const btn=$('wrCheck');
+  btn.disabled=true;
+  btn.innerHTML='<span class="material-symbols-rounded animate-spin">progress_activity</span>İşleniyor...';
+  try{
+    const r=await correctSentence(s, forceLang);
+    lastInput=s; lastLang=r.lang||'';
+    showCorrection(r);
+    addToPool(s, r);
+  }catch(e){
+    if(e.message==='BAD_KEY') alert('API anahtarı geçersiz görünüyor. Profil sekmesinden kontrol et.');
+    else if(e.message==='NO_KEY') alert('API anahtarı yok. Profil sekmesinden ekle.');
+    else alert('İşlem başarısız. İnternet bağlantını kontrol et, tekrar dene.');
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML='<span class="material-symbols-rounded">auto_fix_high</span>Düzelt / Çevir';
+  }
+}
+$('wrCheck').addEventListener('click',()=>runCorrection());
+$('wrToggleLang').addEventListener('click',()=>{
+  // re-run forcing the opposite of what was detected
+  const other = lastLang==='tr' ? 'de' : 'tr';
+  runCorrection(other);
+});
+$('wrSpeak').addEventListener('click',()=>{ const t=$('wrCorrected').dataset.plain; if(t) speak(t); });
+$('wrAltList').addEventListener('click',e=>{ const b=e.target.closest('.wrAltSpeak'); if(b) speak(b.dataset.t); });
+$('wrPoolList').addEventListener('click',e=>{
+  const sp=e.target.closest('.poolSpeak'); if(sp){ speak(sp.dataset.t); return; }
+  const dl=e.target.closest('.poolDel');
+  if(dl){ const id=Number(dl.dataset.id); sentencePool=sentencePool.filter(p=>p.id!==id); savePool(); renderPool(); }
+});
+$('wrPoolClear').addEventListener('click',()=>{ if(confirm('Tüm cümle havuzu silinsin mi?')){ sentencePool=[]; savePool(); renderPool(); } });
+
 // Backup / Restore
 function doBackup(){
-  const data={app:'FluidPolyglot',version:3,date:new Date().toISOString(),known:[...known],favs:[...favs],custom:customWords,groups:groupOverrides,srs:srs,examples:exampleStore};
+  const data={app:'FluidPolyglot',version:3,date:new Date().toISOString(),known:[...known],favs:[...favs],custom:customWords,groups:groupOverrides,srs:srs,examples:exampleStore,pool:sentencePool};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob),a=document.createElement('a');
   a.href=url;a.download=`fluidpolyglot-yedek-${new Date().toISOString().slice(0,10)}.json`;
@@ -841,6 +1026,7 @@ $('restoreFile').addEventListener('change',e=>{
     buildGroups();
     if(d.srs && typeof d.srs==='object'){ if(merge){ Object.assign(srs,d.srs); } else { srs=d.srs; } saveSrs(); }
     if(d.examples && typeof d.examples==='object'){ if(merge){ Object.assign(exampleStore,d.examples); } else { exampleStore=d.examples; } saveExamples(); }
+    if(Array.isArray(d.pool)){ if(merge){ const ids=new Set(sentencePool.map(p=>p.id)); d.pool.forEach(p=>{if(!ids.has(p.id))sentencePool.push(p)}); sentencePool.sort((a,b)=>b.id-a.id); } else { sentencePool=d.pool; } savePool(); }
     saveKnown();saveFavs();saveCustom();resetList();if(activeTab==='stats')renderStats();alert('Geri yükleme tamam! ✅');
   }catch(err){alert('Dosya okunamadı.')}e.target.value=''};
   r.readAsText(f);
