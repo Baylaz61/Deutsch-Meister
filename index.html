@@ -806,7 +806,7 @@ async function fetchExample(word){
   if(!key){ throw new Error('NO_KEY'); }
   const art=word.art?word.art+' ':'';
   const prompt=`Du bist ein Deutschlehrer. Bilde EINEN einfachen, natürlichen deutschen Beispielsatz (A1-A2 Niveau) mit dem Wort "${art}${word.de}" (Bedeutung auf Türkisch: ${word.tr}). Gib NUR ein JSON-Objekt zurück, ohne Markdown, im Format: {"de":"deutscher Satz","tr":"türkische Übersetzung"}`;
-  const models=['gemini-3.5-flash','gemini-2.5-flash','gemini-2.5-flash-lite'];
+  const models=['gemini-3.1-flash-lite','gemini-3.5-flash','gemini-2.5-flash','gemini-2.5-flash-lite'];
   let lastErr=null;
   for(const model of models){
     try{
@@ -878,7 +878,7 @@ Gib NUR ein JSON-Objekt zurück (kein Markdown), in diesem Format:
 }
 
 Für "diff": Wenn die Eingabe Deutsch war, zeige Stück für Stück: "same"=unverändert, "add"=korrigiert/hinzugefügt, "del"=Fehler des Schülers der entfernt wurde. Wenn die Eingabe Türkisch war, setze das ganze deutsche Ergebnis als ein "add"-Stück. Halte Alternativen kurz und umgangssprachlich.`;
-  const models=['gemini-3.5-flash','gemini-2.5-flash','gemini-2.5-flash-lite'];
+  const models=['gemini-3.1-flash-lite','gemini-3.5-flash','gemini-2.5-flash','gemini-2.5-flash-lite'];
   let lastErr=null;
   for(const model of models){
     try{
